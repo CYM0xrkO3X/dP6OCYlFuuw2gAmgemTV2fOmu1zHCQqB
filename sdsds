@@ -1,0 +1,1250 @@
+do
+    local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/lolsavvy/abyss.xyz/main/abyss.Xyz", true))()
+
+        local Tabs = {
+            Aimbot = Library:addTab("Combat", ""),
+            Visuals = Library:addTab("Visuals", ""),
+            Misc = Library:addTab("Misc", ""), 
+            World = Library:addTab("World", ""),
+            Settings = Library:addTab("Settings", "")
+        }
+
+
+local config = Instance.new("Folder")
+config.Name = "Monkey"
+config.Parent = workspace
+
+local OreESPAdornee = Instance.new("Folder")
+OreESPAdornee.Name = "OreESPAdornee"
+OreESPAdornee.Parent = workspace:WaitForChild("Monkey")
+
+        
+-- // Exploits \ --
+
+local ExploitsTab = Tabs.Aimbot:createGroup('right', 'Exploits | Etc')
+
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+-- // JumpShoot \ --
+
+local JSPart
+local JumpShootEnabled = false
+local jumpShootKeybindEnabled = false
+
+local function createJumpShootPart()
+    local JSPart = Instance.new("Part", Workspace)
+    JSPart.Name = "JumpShoot"
+    JSPart.Size = Vector3.new(4, 0.2, 4)
+    JSPart.Anchored = true
+    JSPart.Color = Color3.fromRGB(0, 128, 128) 
+
+    local forceField = Instance.new("SpecialMesh")
+    forceField.Parent = JSPart
+    forceField.MeshType = Enum.MeshType.FileMesh
+    forceField.MeshId = "rbxassetid://20329976" 
+    return JSPart
+end
+
+local function updateJumpShootPosition(JSPart)
+    while JSPart do
+        local character = Workspace.Ignore.LocalCharacter
+        if character and character:FindFirstChild("Middle") then
+            local characterPosition = character.Middle.Position
+            JSPart.Position = characterPosition - Vector3.new(0, 3.5, 0)
+        end
+        RunService.Heartbeat:Wait()
+    end
+end
+
+local function toggleJumpShoot(state)
+    JumpShootEnabled = state
+    if JumpShootEnabled then
+        if not JSPart then
+            JSPart = createJumpShootPart()
+            spawn(function()
+                updateJumpShootPosition(JSPart)
+            end)
+        end
+    else
+        if JSPart then
+            JSPart:Destroy()
+            JSPart = nil
+        end
+    end
+end
+
+-- Add Toggle and Keybind for Jump Shoot
+ExploitsTab:addToggle({
+    text = "Jump Shoot",
+    default = false,
+    flag = "JumpShoot",
+    callback = function(Value)
+        JumpShootEnabled = Value
+        toggleJumpShoot(Value)
+    end
+}):addKeybind({
+    text = "Toggle Jump Shoot",
+    default = Enum.KeyCode.Unknown,
+    mode = "toggle",
+    flag = "JumpShootKeybind",
+    callback = function(Value)
+        jumpShootKeybindEnabled = not jumpShootKeybindEnabled
+        JumpShootEnabled = jumpShootKeybindEnabled
+        toggleJumpShoot(JumpShootEnabled)
+    end
+})
+
+
+-- // Xray \ --
+
+local xray = {
+    XRayEnabled = false,
+    CurrentSliderValue = 60,  -- Default opacity value (60%)
+}
+
+-- Function to update X-Ray visibility based on the current settings
+local function updateXRayVisibility()
+    for _, v in pairs(game:GetDescendants()) do
+        if v:FindFirstChild("Hitbox") then
+            v.Hitbox.Transparency = xray.XRayEnabled and (xray.CurrentSliderValue / 100) or 0
+        end
+    end
+end
+
+-- X-Ray Toggle with Keybind
+local function toggleXRay()
+    xray.XRayEnabled = not xray.XRayEnabled
+    updateXRayVisibility()
+end
+
+ExploitsTab:addToggle({
+    text = "X-Ray",
+    default = false,
+    flag = "xray_toggle",
+    callback = function(Value)
+        xray.XRayEnabled = Value
+        updateXRayVisibility()
+    end
+}):addKeybind({
+    text = "Toggle X-Ray",
+    default = Enum.KeyCode.Z,
+    mode = "toggle",
+    flag = "xray_keybind",
+    callback = toggleXRay
+})
+
+-- Opacity Slider
+ExploitsTab:addSlider({
+    text = "X-Ray Opacity:",
+    suffix = "%",
+    min = 0,
+    max = 100,
+    rounding = 1,
+    default = 60,
+    flag = "xray_slider",
+    callback = function(Value)
+        xray.CurrentSliderValue = Value
+        if xray.XRayEnabled then
+            updateXRayVisibility()
+        end
+    end
+})
+
+-- // Zoom \ --
+
+local zoom = {
+    ZoomEnabled = false,
+    CurrentZoomLevel = 10,  -- Default zoom level
+    DefaultFOV = 70,        -- Default FOV
+}
+
+-- Continuous loop to enforce zoom level
+local function enforceZoomLevel()
+    local camera = game:GetService("Workspace").CurrentCamera
+    while zoom.ZoomEnabled do
+        if camera then
+            camera.FieldOfView = zoom.CurrentZoomLevel
+        end
+        wait(0.1)  -- Adjust the wait time as needed
+    end
+end
+
+-- Toggle Zoom with Keybind
+local function toggleZoom()
+    zoom.ZoomEnabled = not zoom.ZoomEnabled
+    local camera = game:GetService("Workspace").CurrentCamera
+    if camera then
+        if zoom.ZoomEnabled then
+            -- Start the loop to enforce zoom level
+            spawn(enforceZoomLevel)
+        else
+            camera.FieldOfView = zoom.DefaultFOV
+        end
+    end
+end
+
+ExploitsTab:addToggle({
+    text = "Zoom",
+    default = false,
+    flag = "zoom_toggle",
+    callback = function(Value)
+        zoom.ZoomEnabled = Value
+        local camera = game:GetService("Workspace").CurrentCamera
+        if camera then
+            if zoom.ZoomEnabled then
+                -- Start the loop to enforce zoom level
+                spawn(enforceZoomLevel)
+            else
+                camera.FieldOfView = zoom.DefaultFOV
+            end
+        end
+    end
+}):addKeybind({
+    text = "Toggle Zoom",
+    default = Enum.KeyCode.X,
+    mode = "toggle",
+    flag = "zoom_keybind",
+    callback = toggleZoom
+})
+
+-- Zoom Slider
+ExploitsTab:addSlider({
+    text = "Zoom Level:",
+    suffix = "",
+    min = 1,
+    max = 70,
+    rounding = 1,
+    default = 10,
+    flag = "zoom_slider",
+    callback = function(Value)
+        zoom.CurrentZoomLevel = Value
+        if zoom.ZoomEnabled then
+            local camera = game:GetService("Workspace").CurrentCamera
+            if camera then
+                camera.FieldOfView = zoom.CurrentZoomLevel
+            end
+        end
+    end
+})
+
+
+
+
+
+
+-- // Long Neck \ --
+
+local longneck = {
+    LongNeckEnabled = false,
+    UpperLimitDefault = 3,
+    LowerLimitDefault = 1.75,
+    CurrentSliderValue = 1.75,
+    }
+
+    -- Long Neck Toggle with Keybind
+local longNeckKeybindEnabled = false
+
+ExploitsTab:addToggle({text = "Long Neck", default = false, flag = "longneck_toggle", callback = function(Value)
+    longneck.LongNeckEnabled = Value
+    longNeckKeybindEnabled = Value
+    if not longneck.LongNeckEnabled then
+        game:GetService("Workspace").Ignore.LocalCharacter.Bottom.PrismaticConstraint.UpperLimit = longneck.UpperLimitDefault
+        game:GetService("Workspace").Ignore.LocalCharacter.Bottom.PrismaticConstraint.LowerLimit = longneck.LowerLimitDefault
+    else
+        game:GetService("Workspace").Ignore.LocalCharacter.Bottom.PrismaticConstraint.UpperLimit = longneck.CurrentSliderValue
+        game:GetService("Workspace").Ignore.LocalCharacter.Bottom.PrismaticConstraint.LowerLimit = longneck.CurrentSliderValue
+    end
+end}):addKeybind({text = "Toggle Long Neck", default = Enum.KeyCode.Unknown, mode = "toggle", flag = "longneck_keybind", callback = function(Value)
+    longNeckKeybindEnabled = not longNeckKeybindEnabled
+    longneck.LongNeckEnabled = longNeckKeybindEnabled
+    if not longneck.LongNeckEnabled then
+        game:GetService("Workspace").Ignore.LocalCharacter.Bottom.PrismaticConstraint.UpperLimit = longneck.UpperLimitDefault
+        game:GetService("Workspace").Ignore.LocalCharacter.Bottom.PrismaticConstraint.LowerLimit = longneck.LowerLimitDefault
+    else
+        game:GetService("Workspace").Ignore.LocalCharacter.Bottom.PrismaticConstraint.UpperLimit = longneck.CurrentSliderValue
+        game:GetService("Workspace").Ignore.LocalCharacter.Bottom.PrismaticConstraint.LowerLimit = longneck.CurrentSliderValue
+    end
+end})
+
+-- Height Changer Slider
+ExploitsTab:addSlider({text = "Height Changer:", suffix = "x", min = 3.75, max = 7.5, rounding = 2, default = 4.25, flag = "height_slider", callback = function(Value)
+    longneck.CurrentSliderValue = Value
+    if longneck.LongNeckEnabled then
+        game:GetService("Workspace").Ignore.LocalCharacter.Bottom.PrismaticConstraint.LowerLimit = Value
+        game:GetService("Workspace").Ignore.LocalCharacter.Bottom.PrismaticConstraint.UpperLimit = Value
+    end
+end})
+
+
+-- // Combat \ --
+
+-- // Hitbox Expander \ --
+
+local HitboxTab = Tabs.Aimbot:createGroup('left', 'Hitbox Expander | Etc')
+
+local v16 = 3  -- Default X Size
+local v17 = 1  -- Default Y Size
+local v18 = 1  -- Default Z Size
+local v19 = 0  -- Default Transparency
+
+-- Function to update head hitbox size and transparency
+local function updateHeadHitbox(enabled)
+    for _, player in pairs(workspace:GetChildren()) do
+        if player:FindFirstChild("HumanoidRootPart") and player:FindFirstChild("Head") then
+            if enabled then
+                player.Head.Size = Vector3.new(v16, v17, v18)
+                player.Head.Transparency = v19
+            else
+                player.Head.Size = Vector3.new(1.672, 0.836, 0.836)
+                player.Head.Transparency = 0
+            end
+        end
+    end
+
+    -- Update the player's replicated storage head size (if applicable)
+    if game.ReplicatedStorage:FindFirstChild("Player") then
+        local playerHead = game.ReplicatedStorage.Player:FindFirstChild("Head")
+        if playerHead then
+            if enabled then
+                playerHead.Size = Vector3.new(v16, v17, v18)
+            else
+                playerHead.Size = Vector3.new(1.672, 0.836, 0.836)
+            end
+        end
+    end
+end
+
+-- Initialize hitboxEnabledToggle with default value
+local hitboxEnabledToggle = { Value = false }
+
+-- Toggle for enabling/disabling head hitbox modification
+hitboxEnabledToggle = HitboxTab:addToggle({
+    text = "Enabled",
+    default = false,
+    flag = "EnabledHB",
+    callback = function(enabled)
+        hitboxEnabledToggle.Value = enabled
+        updateHeadHitbox(enabled)
+        if enabled then
+            -- Start periodic update when enabled
+            spawn(function()
+                while hitboxEnabledToggle.Value do
+                    updateHeadHitbox(true)
+                    wait(5)  -- Wait for 5 seconds
+                end
+            end)
+        end
+    end
+})
+
+-- Slider for adjusting head hitbox transparency
+HitboxTab:addSlider({
+    text = "Transparency",
+    suffix = "x",
+    min = 0,
+    max = 1,
+    rounding = 2,
+    default = 0,
+    flag = "HitboxT_Slider",
+    callback = function(value)
+        v19 = value
+        if hitboxEnabledToggle.Value then
+            updateHeadHitbox(true)
+        end
+    end
+})
+
+-- Slider for adjusting X Size of the head hitbox
+HitboxTab:addSlider({
+    text = "X Size",
+    suffix = "x",
+    min = 0,
+    max = 6,
+    rounding = 1,
+    default = 3,
+    flag = "HitboxXSize_Slider",
+    callback = function(value)
+        v16 = value
+        if hitboxEnabledToggle.Value then
+            updateHeadHitbox(true)
+        end
+    end
+})
+
+-- Slider for adjusting Y Size of the head hitbox
+HitboxTab:addSlider({
+    text = "Y Size",
+    suffix = "x",
+    min = 0,
+    max = 6,
+    rounding = 2,
+    default = 1,
+    flag = "HitboxYSize_Slider",
+    callback = function(value)
+        v17 = value
+        if hitboxEnabledToggle.Value then
+            updateHeadHitbox(true)
+        end
+    end
+})
+
+-- Slider for adjusting Z Size of the head hitbox
+HitboxTab:addSlider({
+    text = "Z Size",
+    suffix = "x",
+    min = 0,
+    max = 6,
+    rounding = 1,
+    default = 1,
+    flag = "HitboxZSize_Slider",
+    callback = function(value)
+        v18 = value
+        if hitboxEnabledToggle.Value then
+            updateHeadHitbox(true)
+        end
+    end
+})
+
+
+
+-- // Visual \ --
+
+local VisualsTab = Tabs.Visuals:createGroup('left', 'Visuals | Etc')
+
+local Chams = {}
+local BoxESP = {}
+
+-- Default values
+local distance = 750  -- Unified distance setting for both ESP and Chams
+local BoxESPEnabled = false
+local DistanceLabelEnabled = false
+local ChamsEnabled = false
+local chamColor = Color3.fromRGB(235, 128, 220)
+local boxColor = Color3.fromRGB(255, 255, 255)
+
+-- Cache for player models
+local playerCache = {}
+
+-- Function to update player cache
+local function UpdatePlayerCache()
+    playerCache = {}
+    for _, player in pairs(game:GetService("Workspace"):GetChildren()) do
+        if player:IsA("Model") and player:FindFirstChild("HumanoidRootPart") and player:FindFirstChild("Head") then
+            table.insert(playerCache, player)
+        end
+    end
+end
+
+-- Function to create a box ESP around a player
+function BoxESP.Create(Player)
+    local Box = Drawing.new("Square")
+    Box.Visible = false
+    Box.Color = boxColor
+    Box.Filled = false
+    Box.Transparency = 0.50
+    Box.Thickness = 1
+    Box.ZIndex = 1
+    Box.AlwaysOnTop = true
+
+    -- Internal outline box
+    local OutlineBox = Drawing.new("Square")
+    OutlineBox.Visible = false
+    OutlineBox.Color = Color3.fromRGB(0, 0, 0)  -- Black color
+    OutlineBox.Filled = false
+    OutlineBox.Thickness = 1  -- Very thin outline
+    OutlineBox.ZIndex = 0
+    OutlineBox.AlwaysOnTop = true
+
+    local Label = Drawing.new("Text")
+    Label.Visible = false
+    Label.Color = Color3.fromRGB(255, 255, 255)
+    Label.Size = 14
+    Label.Center = true
+    Label.Outline = true
+    Label.OutlineColor = Color3.fromRGB(0, 0, 0)
+    Label.Text = "[E] Player"
+    Label.ZIndex = 2
+
+    local DistanceLabel
+    if DistanceLabelEnabled then
+        DistanceLabel = Drawing.new("Text")
+        DistanceLabel.Visible = false
+        DistanceLabel.Color = Color3.fromRGB(255, 255, 255)
+        DistanceLabel.Size = 14
+        DistanceLabel.Center = true
+        DistanceLabel.Outline = true
+        DistanceLabel.OutlineColor = Color3.fromRGB(0, 0, 0)
+    end
+
+    local Updater
+
+    local function UpdateBox()
+        if Player and Player:FindFirstChild("HumanoidRootPart") and Player:FindFirstChild("Head") then
+            local Camera = workspace.CurrentCamera
+            local Target2dPosition, IsVisible = Camera:WorldToViewportPoint(Player.HumanoidRootPart.Position)
+            local distanceToPlayer = (Camera.CFrame.Position - Player.HumanoidRootPart.Position).Magnitude
+            local scale_factor = 1 / (Target2dPosition.Z * math.tan(math.rad(Camera.FieldOfView * 0.5)) * 2) * 100
+            local width, height = math.floor(36 * scale_factor), math.floor(54 * scale_factor)  -- Slightly tighter around the player
+
+            Box.Visible = IsVisible and distanceToPlayer <= distance
+            Box.Size = Vector2.new(width, height)
+            Box.Position = Vector2.new(Target2dPosition.X - Box.Size.X / 2, Target2dPosition.Y - Box.Size.Y / 2)
+
+            -- Update internal outline box
+            OutlineBox.Visible = Box.Visible
+            OutlineBox.Size = Box.Size + Vector2.new(2, 2)  -- Slightly larger to create an internal border effect
+            OutlineBox.Position = Box.Position - Vector2.new(1, 1)  -- Position it inside the Box
+
+            -- Maintain a fixed position relative to the box
+            Label.Visible = Box.Visible
+            Label.Position = Vector2.new(Target2dPosition.X, Target2dPosition.Y - height / 2 - 20)
+
+            if DistanceLabelEnabled and DistanceLabel then
+                DistanceLabel.Text = tostring(math.floor(distanceToPlayer)) .. "m"
+                DistanceLabel.Visible = Box.Visible
+                DistanceLabel.Position = Vector2.new(Target2dPosition.X, Target2dPosition.Y + height / 2 + 20)
+            end
+        else
+            -- Ensure we only attempt to destroy valid instances
+            if Box then Box.Visible = false end
+            if Label then Label.Visible = false end
+            if DistanceLabel and DistanceLabelEnabled then DistanceLabel.Visible = false end
+            if not Player or not Player:FindFirstChild("Humanoid") or Player:FindFirstChild("Humanoid").Health <= 0 then
+                -- Check if objects are valid before calling Destroy
+                if Box and Box.Destroy then Box:Destroy() end
+                if Label and Label.Destroy then Label:Destroy() end
+                if DistanceLabel and DistanceLabelEnabled and DistanceLabel.Destroy then DistanceLabel:Destroy() end
+                if OutlineBox and OutlineBox.Destroy then OutlineBox:Destroy() end
+                if Updater then Updater:Disconnect() end
+            end
+        end
+    end
+
+    Updater = game:GetService("RunService").RenderStepped:Connect(UpdateBox)
+
+    -- Proper handling of player death
+    local humanoid = Player:FindFirstChild("Humanoid")
+    if humanoid then
+        humanoid.Died:Connect(function()
+            if Box then Box:Destroy() end
+            if Label then Label:Destroy() end
+            if DistanceLabel and DistanceLabelEnabled then DistanceLabel:Destroy() end
+            if OutlineBox then OutlineBox:Destroy() end
+            if Updater then Updater:Disconnect() end
+        end)
+    end
+
+    return Box, Label, DistanceLabel, OutlineBox
+end
+
+local Boxes = {}
+
+local function EnableBoxESP()
+    UpdatePlayerCache()
+    for _, Player in pairs(playerCache) do
+        local Box, Label, DistanceLabel, OutlineBox = BoxESP.Create(Player)
+        table.insert(Boxes, {Player = Player, Box = Box, Label = Label, DistanceLabel = DistanceLabel, OutlineBox = OutlineBox})
+    end
+
+    game.Workspace.DescendantAdded:Connect(function(i)
+        if i:IsA("Model") and i:FindFirstChild("HumanoidRootPart") and i:FindFirstChild("Head") then
+            local Box, Label, DistanceLabel, OutlineBox = BoxESP.Create(i)
+            table.insert(Boxes, {Player = i, Box = Box, Label = Label, DistanceLabel = DistanceLabel, OutlineBox = OutlineBox})
+        end
+    end)
+end
+
+local function DisableBoxESP()
+    for _, entry in pairs(Boxes) do
+        if entry then
+            if entry.Box and entry.Box.Destroy then entry.Box:Destroy() end
+            if entry.Label and entry.Label.Destroy then entry.Label:Destroy() end
+            if entry.DistanceLabel and DistanceLabelEnabled and entry.DistanceLabel.Destroy then entry.DistanceLabel:Destroy() end
+            if entry.OutlineBox and entry.OutlineBox.Destroy then entry.OutlineBox:Destroy() end
+        end
+    end
+    Boxes = {}
+end
+
+function Chams.Create(Player)
+    local Cham = Instance.new("Highlight")
+    Cham.Parent = game:GetService("CoreGui")
+    Cham.Adornee = Player
+    Cham.FillColor = chamColor
+    Cham.FillTransparency = 0.2
+    Cham.OutlineTransparency = 1  -- No outline visible outside
+    Cham.OutlineColor = Color3.fromRGB(255, 255, 255)  -- White outline
+
+    local Updater
+
+    local function UpdateCham()
+        if Player and Player:FindFirstChild("HumanoidRootPart") and Player:FindFirstChild("Head") then
+            local Camera = workspace.CurrentCamera
+            local distanceToPlayer = (Camera.CFrame.Position - Player.HumanoidRootPart.Position).Magnitude
+
+            Cham.Enabled = distanceToPlayer <= distance
+        else
+            Cham:Destroy()
+            if not Player then
+                Updater:Disconnect()
+            end
+        end
+    end
+
+    Updater = game:GetService("RunService").RenderStepped:Connect(UpdateCham)
+
+    -- Cleanup when character dies
+    local humanoid = Player:FindFirstChild("Humanoid")
+    if humanoid then
+        humanoid.Died:Connect(function()
+            Cham:Destroy()
+            Updater:Disconnect()
+        end)
+    end
+
+    return Cham
+end
+
+local ChamsList = {}
+
+local function EnableChams()
+    UpdatePlayerCache()
+    for _, Player in pairs(playerCache) do
+        local Cham = Chams.Create(Player)
+        table.insert(ChamsList, Cham)
+    end
+
+    game.Workspace.DescendantAdded:Connect(function(i)
+        if i:IsA("Model") and i:FindFirstChild("HumanoidRootPart") and i:FindFirstChild("Head") then
+            local Cham = Chams.Create(i)
+            table.insert(ChamsList, Cham)
+        end
+    end)
+end
+
+local function DisableChams()
+    for _, Cham in pairs(ChamsList) do
+        if Cham and Cham.Destroy then
+            Cham:Destroy()
+        end
+    end
+    ChamsList = {}
+end
+
+-- UI toggles and settings
+VisualsTab:addToggle({
+    text = "Box",
+    default = false,
+    flag = "BoxESP",
+    callback = function(state)
+        BoxESPEnabled = state
+        if BoxESPEnabled then
+            EnableBoxESP()
+        else
+            DisableBoxESP()
+        end
+    end
+}):addColorpicker({
+    text = "Box Color",
+    flag = "BoxColor",
+    color = boxColor,
+    callback = function(color)
+        boxColor = color
+        if BoxESPEnabled then
+            for _, entry in pairs(Boxes) do
+                if entry and entry.Box then
+                    entry.Box.Color = boxColor
+                end
+            end
+        end
+    end
+})
+
+VisualsTab:addToggle({
+    text = "Distance Label",
+    default = false,
+    flag = "DistanceLabel",
+    callback = function(state)
+        DistanceLabelEnabled = state
+        if BoxESPEnabled then
+            DisableBoxESP()
+            EnableBoxESP()
+        end
+    end
+})
+
+VisualsTab:addSlider({
+    text = "Display Distance",
+    min = 100,
+    max = 1500,
+    float = 10,
+    default = distance,
+    suffix = "m",
+    flag = "Distance",
+    callback = function(value)
+        distance = value
+        if BoxESPEnabled then
+            DisableBoxESP()
+            EnableBoxESP()
+        end
+        if ChamsEnabled then
+            DisableChams()
+            EnableChams()
+        end
+    end
+})
+
+VisualsTab:addToggle({
+    text = "Chams",
+    default = false,
+    flag = "Chams",
+    callback = function(state)
+        ChamsEnabled = state
+        if ChamsEnabled then
+            EnableChams()
+        else
+            DisableChams()
+        end
+    end
+}):addColorpicker({
+    text = "Chams Color",
+    flag = "ChamColor",
+    color = chamColor,
+    callback = function(color)
+        chamColor = color
+        if ChamsEnabled then
+            for _, Cham in pairs(ChamsList) do
+                if Cham then
+                    Cham.FillColor = chamColor
+                end
+            end
+        end
+    end
+})
+
+
+
+
+
+
+
+-- // Hit Logs \ --
+
+local VisualsTab = Tabs.Visuals:createGroup('right', 'Hit Logs')
+
+local hitLogsEnabled = false
+local hitLogLifetime = 3
+local hitLogColor = Color3.fromRGB(255, 255, 255)  -- Default color is white
+
+local player = game.Players.LocalPlayer  -- Reference to the local player
+
+VisualsTab:addToggle({
+    text = "Toggle",
+    default = false,
+    flag = "hitLogsEnabled",
+    callback = function(value)
+        hitLogsEnabled = value
+    end
+}):addColorpicker({
+    text = "Hit Log Color",
+    ontop = false,
+    flag = "hitLogColor",
+    color = hitLogColor,
+    callback = function(value)
+        hitLogColor = value
+    end
+})
+
+VisualsTab:addSlider({
+    text = "Lifetime",
+    min = 1, max = 10, suffix = "s", float = 1,
+    default = hitLogLifetime,
+    flag = "hitLogLifetime",
+    callback = function(value)
+        hitLogLifetime = value
+    end
+})
+
+local notifications = {}
+local center = workspace.CurrentCamera.ViewportSize / 2
+
+local function hitmarker_update()
+    for i = 1, #notifications do
+        notifications[i].Position = Vector2.new(center.X, center.Y + 150 + (i * 18))
+    end
+end
+
+local function hitmarker(Name, Distance, Damage)
+    if not hitLogsEnabled then return end
+    
+    -- Ignore logs related to the local player
+    if Name == player.Name then return end
+    
+    task.spawn(function()
+        local hitlog = Drawing.new('Text')
+        hitlog.Size = 20
+        hitlog.Font = 2
+        hitlog.Text = "[ Abyss.xyz ] Hit: " .. Name .. " | Distance:  " .. Distance .. "m | Damage: " .. math.floor(Damage) .. "Hp"
+        hitlog.Visible = true
+        hitlog.ZIndex = 3
+        hitlog.Center = true
+        hitlog.Color = hitLogColor
+        hitlog.Outline = true
+        table.insert(notifications, hitlog)
+        hitmarker_update()
+        wait(hitLogLifetime)
+        table.remove(notifications, table.find(notifications, hitlog))
+        hitmarker_update()
+        hitlog:Remove()
+    end)
+end
+
+game:GetService("LogService").MessageOut:Connect(function(message)
+    if not hitLogsEnabled then return end
+    
+    local Name = message:match("->([%w_]+)")
+    local HealthBfr, HealthAfr = message:match("(%d+%.?%d*)->(%d+%.?%d*)hp")
+    local Dist = message:match("(%d+%.?%d*)s")
+    local Damage = tonumber(HealthBfr) - tonumber(HealthAfr)
+    if Name and HealthBfr and HealthAfr and Dist and Damage then
+        hitmarker(Name, Dist, Damage)
+    end
+end)
+
+
+        -- // Worlds \ --
+
+-- Create a new tab named 'Worlds' in the Visuals tab
+local WorldsTab = Tabs.Visuals:createGroup('right', 'Worlds')
+
+-- Variables to track the states of fog and shadow removal
+local removeFog = false
+local removeShadow = false
+
+-- Toggle for removing fog
+WorldsTab:addToggle({
+    text = "Remove Fog",
+    default = false,
+    callback = function(state)
+        removeFog = state
+        game:GetService("Lighting").FogEnd = state and 1e6 or 1000 -- Adjust the fog end distance based on the toggle
+    end,
+    tooltip = "Toggle to enable or disable fog removal"
+})
+
+-- Toggle for removing shadows
+WorldsTab:addToggle({
+    text = "Remove Shadows",
+    default = false,
+    callback = function(state)
+        removeShadow = state
+        game:GetService("Lighting").GlobalShadows = not state -- Enable or disable global shadows based on the toggle
+    end,
+    tooltip = "Toggle to enable or disable shadow removal"
+})
+
+-- Main function to ensure continuous application
+game:GetService("RunService").RenderStepped:Connect(function()
+    local lighting = game:GetService("Lighting")
+
+    if removeFog then
+        lighting.FogEnd = 1e6
+    else
+        lighting.FogEnd = 1000 -- Reset to the default value or any other desired value
+    end
+
+    if removeShadow then
+        lighting.GlobalShadows = false
+    else
+        lighting.GlobalShadows = true
+    end
+end)
+
+        -- // Worlds ESP \ --
+
+
+-- Create the Worlds ESP tab group
+local WorldsEspTab = Tabs.Visuals:createGroup('left', 'Worlds ESP')
+
+-- Toggle for Stone ESP
+WorldsEspTab:addToggle({
+    text = "Stone ESP",
+    default = false,
+    callback = function(enabled)
+        if enabled then
+            local function adornStoneOre(part)
+                if
+                    part:IsA("MeshPart")
+                    and part.BrickColor == BrickColor.new("Flint")
+                    and part.Material == Enum.Material.Limestone
+                then
+                    local parent = part.Parent
+                    if parent and parent:IsA("Model") and #parent:GetChildren() == 1 then
+                        local StoneHighlight = Instance.new("Highlight")
+                        StoneHighlight.Adornee = part
+                        StoneHighlight.FillColor = Color3.fromRGB(128, 128, 128) -- Grey color for Stone
+                        StoneHighlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- White outline
+                        StoneHighlight.OutlineTransparency = 0.1 -- Thin outline
+                        StoneHighlight.FillTransparency = 0.3 -- Transparent fill
+                        StoneHighlight.Parent = workspace.Monkey.OreESPAdornee
+                    end
+                end
+            end
+
+            local function onPartAdded(part)
+                adornStoneOre(part)
+            end
+
+            for _, part in ipairs(workspace:GetDescendants()) do
+                adornStoneOre(part)
+            end
+
+            workspace.DescendantAdded:Connect(onPartAdded)
+        else
+            for _, v in ipairs(workspace.Monkey.OreESPAdornee:GetDescendants()) do
+                if v:IsA("Highlight") and v.Adornee and v.Adornee.Name == "Stone" then
+                    v:Destroy()
+                end
+            end
+        end
+    end
+})
+
+-- Toggle for Iron ESP
+WorldsEspTab:addToggle({
+    text = "Iron ESP",
+    default = false,
+    callback = function(enabled)
+        if enabled then
+            local function adornIronOre(part)
+                if
+                    part:IsA("MeshPart")
+                    and part.BrickColor == BrickColor.new("Burlap")
+                    and part.Material == Enum.Material.Slate
+                then
+                    local IronHighlight = Instance.new("Highlight")
+                    IronHighlight.Adornee = part
+                    IronHighlight.FillColor = Color3.fromRGB(165, 132, 94) -- Burlap color for Iron
+                    IronHighlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- White outline
+                    IronHighlight.OutlineTransparency = 0.1 -- Thin outline
+                    IronHighlight.FillTransparency = 0.3 -- Transparent fill
+                    IronHighlight.Parent = workspace.Monkey.OreESPAdornee
+                end
+            end
+
+            local function onPartAdded(part)
+                adornIronOre(part)
+            end
+
+            for _, part in ipairs(workspace:GetDescendants()) do
+                adornIronOre(part)
+            end
+
+            workspace.DescendantAdded:Connect(onPartAdded)
+        else
+            for _, v in ipairs(workspace.Monkey.OreESPAdornee:GetDescendants()) do
+                if v:IsA("Highlight") and v.Adornee and v.Adornee.Name == "Iron" then
+                    v:Destroy()
+                end
+            end
+        end
+    end
+})
+
+-- Toggle for Nitrate ESP
+WorldsEspTab:addToggle({
+    text = "Nitrate ESP",
+    default = false,
+    callback = function(enabled)
+        if enabled then
+            local function adornNitrateOre(part)
+                if
+                    part:IsA("MeshPart")
+                    and part.BrickColor == BrickColor.new("Institutional white")
+                    and part.Material == Enum.Material.Slate
+                then
+                    local NitrateHighlight = Instance.new("Highlight")
+                    NitrateHighlight.Adornee = part
+                    NitrateHighlight.FillColor = Color3.fromRGB(255, 255, 255) -- White color for Nitrate
+                    NitrateHighlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- White outline
+                    NitrateHighlight.OutlineTransparency = 0.1 -- Thin outline
+                    NitrateHighlight.FillTransparency = 0.3 -- Transparent fill
+                    NitrateHighlight.Parent = workspace.Monkey.OreESPAdornee
+                end
+            end
+
+            local function onPartAdded(part)
+                adornNitrateOre(part)
+            end
+
+            for _, part in ipairs(workspace:GetDescendants()) do
+                adornNitrateOre(part)
+            end
+
+            workspace.DescendantAdded:Connect(onPartAdded)
+        else
+            for _, v in ipairs(workspace.Monkey.OreESPAdornee:GetDescendants()) do
+                if v:IsA("Highlight") and v.Adornee and v.Adornee.Name == "Nitrate" then
+                    v:Destroy()
+                end
+            end
+        end
+    end
+})
+
+-- // Misc \ --
+
+local CustomHitsoundsTabBox = Tabs.Misc:createGroup('left', 'Player Hitsound')
+
+local sounds = {
+    ["Default Headshot Hit"] = "rbxassetid://9119561046",
+    ["Default Body Hit"] = "rbxassetid://9114487369",
+    ["Default Wood Hit"] = "rbxassetid://9125573608",
+    ["Default Rock Hit"] = "rbxassetid://9118630389",
+    Neverlose = "rbxassetid://8726881116",
+    Gamesense = "rbxassetid://4817809188",
+    One = "rbxassetid://7380502345",
+    Bell = "rbxassetid://6534947240",
+    Rust = "rbxassetid://1255040462",
+    TF2 = "rbxassetid://2868331684",
+    Slime = "rbxassetid://6916371803",
+    ["Among Us"] = "rbxassetid://5700183626",
+    Minecraft = "rbxassetid://4018616850",
+    ["CS:GO"] = "rbxassetid://6937353691",
+    Saber = "rbxassetid://8415678813",
+    Baimware = "rbxassetid://3124331820",
+    Osu = "rbxassetid://7149255551",
+    ["TF2 Critical"] = "rbxassetid://296102734",
+    Bat = "rbxassetid://3333907347",
+    ["Call of Duty"] = "rbxassetid://5952120301",
+    Bubble = "rbxassetid://6534947588",
+    Pick = "rbxassetid://1347140027",
+    Pop = "rbxassetid://198598793",
+    Bruh = "rbxassetid://4275842574",
+    Bamboo = "rbxassetid://3769434519",
+    Crowbar = "rbxassetid://546410481",
+    Weeb = "rbxassetid://6442965016",
+    Beep = "rbxassetid://8177256015",
+    Bambi = "rbxassetid://8437203821",
+    Stone = "rbxassetid://3581383408",
+    ["Old Fatality"] = "rbxassetid://6607142036",
+    Click = "rbxassetid://8053704437",
+    Ding = "rbxassetid://7149516994",
+    Snow = "rbxassetid://6455527632",
+    Laser = "rbxassetid://7837461331",
+    Mario = "rbxassetid://2815207981",
+    Steve = "rbxassetid://4965083997",
+    Snowdrake = "rbxassetid://7834724809",
+}
+
+local SoundService = game:GetService("SoundService")
+
+-- Headshot Hitsound Toggle
+CustomHitsoundsTabBox:addToggle({
+    text = "Enable Headshot Hitsound", 
+    default = false, 
+    flag = "headshot_toggle", 
+    callback = function(Value)
+        SoundService.PlayerHitHeadshot.Volume = Value and 5 or 0  -- Set default volume if enabled
+    end
+})
+
+-- Headshot Hitsound Dropdown
+CustomHitsoundsTabBox:addList({
+    text = "Head Hitsound:",
+    multiselect = false,
+    values = {
+        "Default Headshot Hit",
+        "Neverlose",
+        "Gamesense",
+        "One",
+        "Bell",
+        "Rust",
+        "TF2",
+        "Slime",
+        "Among Us",
+        "Minecraft",
+        "CS:GO",
+        "Saber",
+        "Baimware",
+        "Osu",
+        "TF2 Critical",
+        "Bat",
+        "Call of Duty",
+        "Bubble",
+        "Pick",
+        "Pop",
+        "Bruh",
+        "Bamboo",
+        "Crowbar",
+        "Weeb",
+        "Beep",
+        "Bambi",
+        "Stone",
+        "Old Fatality",
+        "Click",
+        "Ding",
+        "Snow",
+        "Laser",
+        "Mario",
+        "Steve",
+        "Snowdrake",
+    },
+    flag = "headshot_sound",
+    callback = function(selectedSound)
+        local soundId = sounds[selectedSound]
+        SoundService.PlayerHitHeadshot.SoundId = soundId
+    end
+})
+
+-- Headshot Hitsound Volume Slider
+CustomHitsoundsTabBox:addSlider({
+    text = "Headshot Volume:",
+    suffix = "",
+    min = 0,
+    max = 10,
+    rounding = 0,
+    default = 5,
+    flag = "headshot_volume",
+    callback = function(Value)
+        SoundService.PlayerHitHeadshot.Volume = Value
+    end
+})
+
+-- Headshot Hitsound Pitch Slider
+CustomHitsoundsTabBox:addSlider({
+    text = "Headshot Pitch:",
+    suffix = "",
+    min = 0,
+    max = 2,
+    rounding = 1,
+    default = 1,
+    flag = "headshot_pitch",
+    callback = function(Value)
+        SoundService.PlayerHitHeadshot.Pitch = Value
+    end
+})
+
+-- Body Hitsound Toggle
+CustomHitsoundsTabBox:addToggle({
+    text = "Enable Body Hitsound", 
+    default = false, 
+    flag = "body_toggle", 
+    callback = function(Value)
+        SoundService.PlayerHit2.Volume = Value and 5 or 0  -- Set default volume if enabled
+    end
+})
+
+-- Body Hitsound Dropdown
+CustomHitsoundsTabBox:addList({
+    text = "Body Hitsound:",
+    multiselect = false,
+    values = {
+        "Default Body Hit",
+        "Neverlose",
+        "Gamesense",
+        "One",
+        "Bell",
+        "Rust",
+        "TF2",
+        "Slime",
+        "Among Us",
+        "Minecraft",
+        "CS:GO",
+        "Saber",
+        "Baimware",
+        "Osu",
+        "TF2 Critical",
+        "Bat",
+        "Call of Duty",
+        "Bubble",
+        "Pick",
+        "Pop",
+        "Bruh",
+        "Bamboo",
+        "Crowbar",
+        "Weeb",
+        "Beep",
+        "Bambi",
+        "Stone",
+        "Old Fatality",
+        "Click",
+        "Ding",
+        "Snow",
+        "Laser",
+        "Mario",
+        "Steve",
+        "Snowdrake",
+    },
+    flag = "body_sound",
+    callback = function(selectedSound)
+        local soundId = sounds[selectedSound]
+        SoundService.PlayerHit2.SoundId = soundId
+    end
+})
+
+-- Body Hitsound Volume Slider
+CustomHitsoundsTabBox:addSlider({
+    text = "Body Volume:",
+    suffix = "",
+    min = 0,
+    max = 10,
+    rounding = 0,
+    default = 5,
+    flag = "body_volume",
+    callback = function(Value)
+        SoundService.PlayerHit2.Volume = Value
+    end
+})
+
+-- Body Hitsound Pitch Slider
+CustomHitsoundsTabBox:addSlider({
+    text = "Body Pitch:",
+    suffix = "",
+    min = 0,
+    max = 2,
+    rounding = 1,
+    default = 1,
+    flag = "body_pitch",
+    callback = function(Value)
+        SoundService.PlayerHit2.Pitch = Value
+    end
+})
+
+
+
+
+
+
+
+
+
+
+        local gameTab = Tabs.Settings:createGroup('left', 'Game')
+
+        --// Game
+        do
+    
+            gameTab:addToggle({text = "Menu Bind",default = true,flag = "MenuBind_Toggle",callback = function(state)
+            end}):addKeybind({text = "Menu Bind",type = "toggle",key = Enum.KeyCode.K,flag = "menubindkeybind_toggle",callback = function(state)
+            Library.keybind = state
+             end})
+    
+            gameTab:addSlider({text = "fps cap:", min = 60, max = 999, suffix = "fps", float = 1, default = 999, flag = "fpscap_slider",callback = function(Value)
+                setfpscap(Value)
+            end})
+    
+            gameTab:addButton({text = "Copy Join Code",callback = function(state)
+                setclipboard(("game:GetService('TeleportService'):TeleportToPlaceInstance(%s, '%s')"):format(game.PlaceId, game.JobId))
+                Library:Notify("Patrick.Pub - succesfully copied join code!", 5)
+                end})
+    
+            gameTab:addButton({text = "rejoin",callback = function(Value)
+                game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, game.JobId)
+                library:Notify("Patrick.Pub - succesfully rejoining server!", 5)
+            end})
+        end
+
+
+    end
