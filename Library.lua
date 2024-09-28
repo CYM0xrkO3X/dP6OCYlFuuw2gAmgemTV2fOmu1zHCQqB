@@ -2277,7 +2277,7 @@ do
 
     local KeybindLabel = Library:CreateLabel2({
         Size = UDim2.new(1, 0, 0, 20);
-        Position = UDim2.fromOffset(0, 2),
+        Position = UDim2.fromOffset(0, 0),
         TextXAlignment = Enum.TextXAlignment.Center,
         
         Text = 'Keybinds';
