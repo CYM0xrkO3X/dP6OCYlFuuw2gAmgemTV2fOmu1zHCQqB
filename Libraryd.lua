@@ -2277,10 +2277,10 @@ do
 
     local KeybindLabel = Library:CreateLabel2({
         Size = UDim2.new(1, 0, 0, 20);
-        Position = UDim2.fromOffset(5, 2),
+        Position = UDim2.fromOffset(0, 2),
         TextXAlignment = Enum.TextXAlignment.Center,
         
-        Text = '[ Keybinds ]';
+        Text = 'Keybinds';
         ZIndex = 104;
         Parent = KeybindInner;
     });
